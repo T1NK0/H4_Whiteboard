@@ -13,6 +13,7 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity {
 
     com.google.android.material.floatingactionbutton.FloatingActionButton addview;
+    com.google.android.material.floatingactionbutton.FloatingActionButton removeview;
     FrameLayout layout;
 
     @Override
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
         // initialising layout
         addview = findViewById(R.id.btnAddFromApi);
+        removeview = findViewById(R.id.btnCleanBoard);
         layout = findViewById(R.id.whiteboardLayout);
 
         // we will click on the add view button
@@ -39,6 +41,13 @@ public class MainActivity extends AppCompatActivity {
 
                 // adding the background color
                 generateRandomColor(imageView);
+            }
+        });
+
+        removeview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                layout.removeAllViews();
             }
         });
     }
