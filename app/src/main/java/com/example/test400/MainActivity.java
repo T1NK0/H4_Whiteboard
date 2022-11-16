@@ -5,8 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import java.util.Random;
 
@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity {
 
     com.google.android.material.floatingactionbutton.FloatingActionButton addview;
     com.google.android.material.floatingactionbutton.FloatingActionButton removeview;
-    FrameLayout layout;
+    RelativeLayout layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addNewImageView(ImageView imageView, int width, int height) {
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);
 
         // setting the margin in linearlayout
         params.setMargins(0, 10, 0, 10);

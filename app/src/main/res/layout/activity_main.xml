@@ -7,7 +7,8 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <FrameLayout
+
+    <RelativeLayout
         android:id="@+id/whiteboardLayout"
         android:layout_width="350dp"
         android:layout_height="500dp"
@@ -19,7 +20,7 @@
         app:layout_constraintHorizontal_bias="0.454"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.53" />
+        app:layout_constraintVertical_bias="0.53"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnCaptureImage"
