@@ -2,6 +2,7 @@ package com.example.test400;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -23,70 +24,38 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView mTextViewResult;
-
-    private com.google.android.material.floatingactionbutton.FloatingActionButton addview;
-    private com.google.android.material.floatingactionbutton.FloatingActionButton removeview;
     private RelativeLayout layout;
 
-    /***
-     *
-     * @param savedInstanceState
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
-        // initialising layout
-        addview = findViewById(R.id.btnAddFromApi);
-        removeview = findViewById(R.id.btnCleanBoard);
+        //Action buttons at the bottom of page.
+        com.google.android.material.floatingactionbutton.FloatingActionButton addImageview = findViewById(R.id.btnAddFromApi);
+        com.google.android.material.floatingactionbutton.FloatingActionButton removeImageview = findViewById(R.id.btnCleanBoard);
+        com.google.android.material.floatingactionbutton.FloatingActionButton takeImageView = findViewById(R.id.btnCaptureImage);
+
+        //Get RelativeLayout from activity.
         layout = findViewById(R.id.whiteboardLayout);
 
-//        Response response = client.newCall(request).execute();
-
-        addview.setOnClickListener(new View.OnClickListener() {
+        // Add click listener to addview button.
+        addImageview.setOnClickListener(new View.OnClickListener() {
+            /***
+             * On click of button, call the "GetRandomImageFromAPI click
+             *
+             * @param v The button clicked.
+             */
             @Override
             public void onClick(View v) {
-                // initialising new layout
-                ImageView imageView = new ImageView(MainActivity.this);
-
-                OkHttpClient client = new OkHttpClient().newBuilder()
-                        .build();
-                Request request = new Request.Builder()
-                        .url("http://10.108.137.25:5078/Image")
-                        .method("GET", null)
-                        .build();
-                client.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        if (response.isSuccessful()) {
-                            String myResponse = response.body().string();
-
-                            MainActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    byte[] decodedString = Base64.decode(myResponse, Base64.DEFAULT);
-                                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                                    imageView.setImageBitmap(decodedByte);
-                                }
-                            });
-                        }
-                    }
-                });
-
-                // calling addNewImageView with width and height
-                addNewImageView(imageView, 400, 200);
+                GetRandomImageFromAPI(new ImageView(MainActivity.this));
             }
         });
 
         //Looks at the removeView button and adds a listener for click.
-        removeview.setOnClickListener(new View.OnClickListener() {
+        removeImageview.setOnClickListener(new View.OnClickListener() {
             /***
              * Removes all views from the relative layout on click of button.
              *
@@ -97,6 +66,76 @@ public class MainActivity extends AppCompatActivity {
                 layout.removeAllViews();
             }
         });
+
+        takeImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+                startActivity(intent);
+            }
+        });
+    }
+
+
+    /***
+     * Gets a random image, and sets it to our imageviews setImageBitmap
+     *
+     * @param imageView Our imageView we want to add the image to.
+     */
+    private void GetRandomImageFromAPI(ImageView imageView) {
+        // Initialising http client
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .build();
+
+        // Initialising request, and setting our url to local ip, with get method.
+        Request request = new Request.Builder()
+                .url("http://10.108.137.25:5078/Image") //Your machines local IPV4
+                .method("GET", null)
+                .build();
+
+        //Calls our http client, with a new call, which is the request.
+        client.newCall(request).enqueue(new Callback() {
+            /***
+             * Adds a exception to the stack.
+             *
+             * @param call a request that can be canceled.
+             * @param e our exception.
+             */
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            /***
+             * If we get the data correctly, make the Apiresponse into string,
+             * and create a new thread to communicate with the UI thread so the UI don't crash.
+             *
+             * @param call Our data request that can be canceled.
+             * @param response the http response.
+             * @throws IOException the exception to throw if error.
+             */
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String apiImage = response.body().string();
+
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        /***
+                         * Runs the runnable ui thread and sets the imageView's value on setImageBitmap to the decoded string.
+                         */
+                        @Override
+                        public void run() {
+                            byte[] decodedString = Base64.decode(apiImage, Base64.DEFAULT);
+                            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                            imageView.setImageBitmap(decodedByte);
+                        }
+                    });
+                }
+            }
+        });
+
+        // calling AddNewImageView with width and height
+        AddNewImageView(imageView, 400, 400);
     }
 
     /***
@@ -106,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
      * @param width The width of the imageView.
      * @param height The height of the imageview.
      */
-    private void addNewImageView(ImageView imageView, int width, int height) {
+    private void AddNewImageView(ImageView imageView, int width, int height) {
         Random random = new Random();
 
         //Creates new instance of layout parameters.
