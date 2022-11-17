@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
@@ -78,11 +79,23 @@ public class MainActivity extends AppCompatActivity {
              */
             @Override
             public void onClick(View view) {
-                Intent camera = new Intent("android.media.action.IMAGE_CAPTURE");
-                startActivity(camera);
+                Intent camera_intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(camera_intent, pic_id);
             }
         });
+    }
 
+    protected void onActivityResult(int requestCode, int resultcode, Intent data) {
+        super.onActivityResult(requestCode, resultcode, data);
+        if (requestCode == pic_id){
+            ImageView imageView = new ImageView(MainActivity.this);
+
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+
+            imageView.setImageBitmap(photo);
+
+            AddNewImageView(imageView, 400, 400);
+        }
     }
 
     /***
