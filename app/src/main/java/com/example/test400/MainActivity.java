@@ -1,5 +1,6 @@
 package com.example.test400;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -25,6 +26,7 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     private RelativeLayout layout;
+    private static final int pic_id = 123;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
 
         //Action buttons at the bottom of page.
         com.google.android.material.floatingactionbutton.FloatingActionButton addImageview = findViewById(R.id.btnAddFromApi);
@@ -46,10 +49,10 @@ public class MainActivity extends AppCompatActivity {
             /***
              * On click of button, call the "GetRandomImageFromAPI click
              *
-             * @param v The button clicked.
+             * @param view The button clicked.
              */
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 GetRandomImageFromAPI(new ImageView(MainActivity.this));
             }
         });
@@ -59,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
             /***
              * Removes all views from the relative layout on click of button.
              *
-             * @param view The on click listener.
+             * @param view The button clicked.
              */
             @Override
             public void onClick(View view) {
@@ -68,14 +71,19 @@ public class MainActivity extends AppCompatActivity {
         });
 
         takeImageView.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Listens to click on the camera button, and opens the camera on the phone.
+             *
+             * @param view The button clicked.
+             */
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-                startActivity(intent);
+                Intent camera = new Intent("android.media.action.IMAGE_CAPTURE");
+                startActivity(camera);
             }
         });
-    }
 
+    }
 
     /***
      * Gets a random image, and sets it to our imageviews setImageBitmap
@@ -154,6 +162,9 @@ public class MainActivity extends AppCompatActivity {
         // setting the margin in linearlayout
         params.setMargins(random.nextInt(700), random.nextInt(1000), 0, 0);
         imageView.setLayoutParams(params);
+
+        /** image dragable function */
+//        imageView.setOnTouchListener();
 
         // adding the image in layout
         layout.addView(imageView);
