@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
 
     private RelativeLayout layout;
     private static final int pic_id = 123;
+    private int xDelta = 0;
+    private int yDelta = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +96,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Creates a new image to the layout and adds it to the internal storage of the device.
+     *
+     * @param requestCode the activity request code we send along on our take image click, to start the activity.
+     * @param resultcode
+     * @param data the picture to save.
+     */
     protected void onActivityResult(int requestCode, int resultcode, Intent data) {
         super.onActivityResult(requestCode, resultcode, data);
         if (requestCode == pic_id){
@@ -193,12 +202,19 @@ public class MainActivity extends AppCompatActivity {
         layout.addView(imageView);
     }
 
+    /**
+     * Saves the image to the local directory on the phone.
+     *
+     * @param bitmapImage the image we want to save.
+     * @return the absolute path of the directory.
+     */
     private String SaveToInternalStorage(Bitmap bitmapImage){
+        Random random = new Random();
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        // path to /data/data/yourapp/app_data/imageDir
+        // path to /data/data/test400/app_data/imageDir
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        // Create imageDir
-        File mypath=new File(directory,"profile.jpg");
+        // Create imageDir with a random generated number for name.
+        File mypath = new File(directory,random.nextInt(999999999) + ".jpg");
 
         FileOutputStream fos = null;
         try {
@@ -217,22 +233,11 @@ public class MainActivity extends AppCompatActivity {
         return directory.getAbsolutePath();
     }
 
-//    private void loadImageFromStorage(String path)
-//    {
-//
-//        try {
-//            File f=new File(path, "profile.jpg");
-//            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
-//            ImageView img=(ImageView)findViewById(R.id.imgPicker);
-//            img.setImageBitmap(b);
-//        }
-//        catch (FileNotFoundException e)
-//        {
-//            e.printStackTrace();
-//        }
-//
-//    }
-
+    /**
+     * When image is touched, calculate position, and get the raw x and y cordinate of where we end up when we let go of the touch agian.
+     *
+     * @return true value, to say that we are touhing an image.
+     */
     private View.OnTouchListener onTouchListener() {
         return new View.OnTouchListener() {
 
@@ -242,8 +247,6 @@ public class MainActivity extends AppCompatActivity {
 
                 final int x = (int) event.getRawX();
                 final int y = (int) event.getRawY();
-                int xDelta = 0;
-                int yDelta = 0;
 
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
 
