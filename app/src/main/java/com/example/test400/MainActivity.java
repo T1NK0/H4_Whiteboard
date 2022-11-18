@@ -3,18 +3,27 @@ package com.example.test400;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
@@ -94,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
 
             imageView.setImageBitmap(photo);
 
+            SaveToInternalStorage(photo);
+
             AddNewImageView(imageView, 400, 400);
         }
     }
@@ -110,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialising request, and setting our url to local ip, with get method.
         Request request = new Request.Builder()
-                .url("http://10.108.137.25:5078/Image") //Your machines local IPV4
+                .url("http://10.108.137.16:5078/Image") //Your machines local IPV4
                 .method("GET", null)
                 .build();
 
@@ -176,10 +187,86 @@ public class MainActivity extends AppCompatActivity {
         params.setMargins(random.nextInt(700), random.nextInt(1000), 0, 0);
         imageView.setLayoutParams(params);
 
-        /** image dragable function */
-//        imageView.setOnTouchListener();
+        imageView.setOnTouchListener(onTouchListener());
 
         // adding the image in layout
         layout.addView(imageView);
+    }
+
+    private String SaveToInternalStorage(Bitmap bitmapImage){
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath=new File(directory,"profile.jpg");
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
+    }
+
+//    private void loadImageFromStorage(String path)
+//    {
+//
+//        try {
+//            File f=new File(path, "profile.jpg");
+//            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
+//            ImageView img=(ImageView)findViewById(R.id.imgPicker);
+//            img.setImageBitmap(b);
+//        }
+//        catch (FileNotFoundException e)
+//        {
+//            e.printStackTrace();
+//        }
+//
+//    }
+
+    private View.OnTouchListener onTouchListener() {
+        return new View.OnTouchListener() {
+
+            @SuppressLint("ClickableViewAccessibility")
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+
+                final int x = (int) event.getRawX();
+                final int y = (int) event.getRawY();
+                int xDelta = 0;
+                int yDelta = 0;
+
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+
+                    case MotionEvent.ACTION_DOWN:
+                        RelativeLayout.LayoutParams lParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+
+                        xDelta = x - lParams.leftMargin;
+                        yDelta = y - lParams.topMargin;
+                        break;
+
+                    case MotionEvent.ACTION_MOVE:
+                        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
+                        layoutParams.leftMargin = x - xDelta;
+                        layoutParams.topMargin = y - yDelta;
+                        layoutParams.rightMargin = 0;
+                        layoutParams.bottomMargin = 0;
+                        view.setLayoutParams(layoutParams);
+                        break;
+                }
+
+                layout.invalidate();
+                return true;
+            }
+        };
     }
 }
