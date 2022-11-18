@@ -20,17 +20,21 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Random;
+import java.util.UUID;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
@@ -100,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
      * Creates a new image to the layout and adds it to the internal storage of the device.
      *
      * @param requestCode the activity request code we send along on our take image click, to start the activity.
-     * @param resultcode
+     * @param resultcode status for
      * @param data the picture to save.
      */
     protected void onActivityResult(int requestCode, int resultcode, Intent data) {
@@ -113,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
             imageView.setImageBitmap(photo);
 
             SaveToInternalStorage(photo);
+
+            SaveToAPI(photo);
 
             AddNewImageView(imageView, 400, 400);
         }
@@ -130,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialising request, and setting our url to local ip, with get method.
         Request request = new Request.Builder()
-                .url("http://10.108.137.16:5078/Image") //Your machines local IPV4
+                .url("http://10.108.137.16:5078/Image/GetImg") //Your machines local IPV4
                 .method("GET", null)
                 .build();
 
@@ -192,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
         //Creates new instance of layout parameters.
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);
 
-        // setting the margin in linearlayout
+        // setting the margin in Relativelayout
         params.setMargins(random.nextInt(700), random.nextInt(1000), 0, 0);
         imageView.setLayoutParams(params);
 
@@ -203,18 +209,72 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Save image to our API
+     *
+     * @param photo the photo to send to the API.
+     */
+    private void SaveToAPI(Bitmap photo) {
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        photo.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream .toByteArray();
+
+        String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .build();
+
+        RequestBody formBody = new FormBody.Builder()
+                .add("image", encoded)
+                .build();
+
+        // Initialising request, and setting our url to local ip, with get method.
+        Request request = new Request.Builder()
+                .url("http://10.108.137.16:5078/Image/SaveImg") //Your machines local IPV4
+                .method("POST", formBody)
+                .build();
+
+        //Calls our http client, with a new call, which is the request.
+        client.newCall(request).enqueue(new Callback() {
+            /***
+             * Adds a exception to the stack.
+             *
+             * @param call a request that can be canceled.
+             * @param e our exception.
+             */
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            /***
+             * If we get the data correctly, make the Apiresponse into string,
+             * and create a new thread to communicate with the UI thread so the UI don't crash.
+             *
+             * @param call Our data request that can be canceled.
+             * @param response the http response.
+             * @throws IOException the exception to throw if error.
+             */
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                }
+            }
+        });
+    }
+
+    /**
      * Saves the image to the local directory on the phone.
      *
      * @param bitmapImage the image we want to save.
      * @return the absolute path of the directory.
      */
     private String SaveToInternalStorage(Bitmap bitmapImage){
-        Random random = new Random();
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         // path to /data/data/test400/app_data/imageDir
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        File directory = cw.getDir("photos", Context.MODE_PRIVATE);
         // Create imageDir with a random generated number for name.
-        File mypath = new File(directory,random.nextInt(999999999) + ".jpg");
+        File mypath = new File(directory, UUID.randomUUID().toString() + ".jpg");
 
         FileOutputStream fos = null;
         try {
@@ -250,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (event.getAction() & MotionEvent.ACTION_MASK) {
 
+                    //Action when clicked
                     case MotionEvent.ACTION_DOWN:
                         RelativeLayout.LayoutParams lParams = (RelativeLayout.LayoutParams) view.getLayoutParams();
 
